@@ -1,4 +1,10 @@
 
+## 使用
+```
+$ npm i
+$ npm run start
+```
+
 ## 使用Parcel 配合编写ts 代码
 https://www.parceljs.cn/
 https://www.jianshu.com/p/c6745ff40497
@@ -22,7 +28,7 @@ $ npm i parcel -D --registry=https://registry.npm.taobao.org
  "rootDir": "./src",                                 
  "outDir": "./dist",
 ```
-   
+
 执行完 `npm run test`后, 会自动访问http://localhost:1234端口
 ```
 $  "test": "parcel ./src/index.html"
@@ -36,6 +42,8 @@ $  "test": "parcel ./src/index.html"
 > 帮助理解ts文件内容
 > 用来打通 ts与js 之间的关系
 ### 方式一:安装别人写的.d.ts===>console.log('使用jquery代码');
+
+### 方式二:手写.d.ts
 
 $(function () {
     alert(123)
@@ -135,4 +143,74 @@ declare namespace $ {
   }
 }
 
+```
+
+
+// 
+```shell
+$ npm i jquery --dev-save
+```
+// 通过ES model 形式引入
+``` ts
+declare module 'jquery' {
+    interface JqueryInstance {
+        html: (html: string) => JqueryInstance;
+    }
+
+    // 混合类型
+    function $(readyFunc: () => void): void;
+
+    function $(selector: string): JqueryInstance;
+
+    namespace $ {
+        namespace fn {
+            class init { }
+        }
+    }
+    export = $; 
+}
+```
+
+
+## key 类型不确定时候的泛型处理方法?
+`<T extends keyof Person>`
+`保证类型推断的准确`
+``` ts
+// key 类型不确定时候的泛型处理方法
+// 根据key 值推断出正确的类型 使用keyof 和泛型
+interface Person{
+    name: string;
+    age: number;
+    gender:string;
+}
+
+class Teacher{
+    constructor(private info:Person){}
+    // 1.key 是一个不确定的类型
+    // 2.key 取值为Person 中的keyof 中的一种
+    // 3. 返回Person[T]:Persion 中某种属性的类型
+    getInfo<T extends keyof Person>(key:T):Person[T]{
+        return this.info[key]
+    }
+}
+
+
+
+// T extends keyof Person  
+// key:  'age'
+// Person['age']
+
+
+// type T = 'gender'
+// key:  'gender'
+// Person['gender'] ==> string
+
+const teacher = new Teacher({
+    name:'dell',
+    age:18,
+    gender:'male'
+})
+
+const test = teacher.getInfo('age')
+console.log(test);
 ```
